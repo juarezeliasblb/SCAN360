@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>SCAN360</title>
+
 <link rel="manifest" href="manifest.json" />
 <meta name="theme-color" content="#020617" />
 
@@ -24,7 +25,7 @@
     user-select: none;
   }
 
-  button, select {
+  button {
     font-family: inherit;
   }
 
@@ -32,10 +33,6 @@
     width: 100vw;
     height: 100vh;
   }
-
-  /* =========================
-     MENU
-  ========================= */
 
   #menuScreen {
     display: flex;
@@ -161,6 +158,17 @@
     font-size: 14px;
   }
 
+  #competitionOptions {
+    display: none;
+    margin-top: 18px;
+    gap: 18px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #competitionOptions.visible {
+    display: grid;
+  }
+
   .start-row {
     margin-top: 22px;
     display: flex;
@@ -174,11 +182,9 @@
     padding: 22px 24px;
     font-size: 30px;
     font-weight: 950;
-    letter-spacing: -0.02em;
     background: #ffffff;
     color: #020617;
     cursor: pointer;
-    box-shadow: 0 16px 50px rgba(255,255,255,0.12);
   }
 
   .hint {
@@ -187,21 +193,6 @@
     color: #94a3b8;
     font-size: 14px;
   }
-
-  #competitionOptions {
-    display: none;
-    margin-top: 18px;
-    gap: 18px;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  #competitionOptions.visible {
-    display: grid;
-  }
-
-  /* =========================
-     SESSION
-  ========================= */
 
   #sessionScreen {
     display: none;
@@ -212,7 +203,6 @@
   }
 
   #stimulus {
-    font-size: clamp(220px, 70vmin, 900px);
     font-weight: 950;
     line-height: 0.85;
     color: #111827;
@@ -223,7 +213,11 @@
     white-space: nowrap;
   }
 
-  .stimulus-size {
+  .number-size {
+    font-size: clamp(390px, 122vmin, 1700px);
+  }
+
+  .direction-size {
     font-size: clamp(300px, 94vmin, 1300px);
   }
 
@@ -232,7 +226,11 @@
   }
 
   @media (orientation: landscape) {
-    .stimulus-size {
+    .number-size {
+      font-size: clamp(470px, 145vh, 1900px);
+    }
+
+    .direction-size {
       font-size: clamp(360px, 118vh, 1500px);
     }
 
@@ -242,7 +240,11 @@
   }
 
   @media (orientation: portrait) {
-    .stimulus-size {
+    .number-size {
+      font-size: clamp(440px, 155vw, 1900px);
+    }
+
+    .direction-size {
       font-size: clamp(340px, 124vw, 1400px);
     }
 
@@ -250,17 +252,6 @@
       font-size: clamp(150px, 78vw, 620px);
     }
   }
-  }
-
-    .direction-stimulus {
-      font-size: clamp(160px, 82vw, 640px);
-    }
-
-    .special-stimulus {
-      font-size: clamp(130px, 60vw, 480px);
-    }
-  }
-
 
   #pauseOverlay {
     display: none;
@@ -291,7 +282,6 @@
 
   .pause-actions {
     display: grid;
-    grid-template-columns: 1fr;
     gap: 12px;
   }
 
@@ -314,8 +304,6 @@
     color: #ffffff;
   }
 
-  
-
   @media (max-width: 800px) {
     .grid,
     #competitionOptions.visible {
@@ -336,9 +324,6 @@
 
 <body>
 
-<!-- =========================
-     MENU PRINCIPAL
-========================= -->
 <div id="menuScreen" class="screen">
   <div class="menu-card">
     <div class="brand">
@@ -379,7 +364,7 @@
         <div class="toggle-row">
           <div>
             <h2 style="margin-bottom: 4px;">Competición</h2>
-            <p>Activa corazón y bomba dentro de la sesión.</p>
+            <p>Activa corazón, bomba y eventos especiales.</p>
           </div>
           <button id="competitionToggle" class="option-btn">OFF</button>
         </div>
@@ -424,11 +409,8 @@
   </div>
 </div>
 
-<!-- =========================
-     SESIÓN
-========================= -->
 <div id="sessionScreen" class="screen">
-  <div id="stimulus" class="stimulus-size">1</div>
+  <div id="stimulus" class="number-size">1</div>
 
   <div id="pauseOverlay">
     <div class="pause-card">
@@ -442,21 +424,18 @@
 </div>
 
 <script>
-/* =========================
-   CONFIGURACIÓN BASE
-========================= */
-
 const COLORS = [
   { id: "red", name: "Rojo", value: "#ef4444" },
   { id: "blue", name: "Azul", value: "#3b82f6" },
   { id: "green", name: "Verde", value: "#22c55e" },
   { id: "yellow", name: "Amarillo", value: "#facc15" },
   { id: "white", name: "Blanco", value: "#ffffff" },
-  { id: "black", name: "Negro", value: "#000000" },
+  { id: "black", name: "Negro", value: "#000000" }
 ];
 
 const SPEEDS = [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5];
 const DIRECTIONS = ["↑", "↓", "←", "→"];
+const SPECIAL_BACKGROUND = "#17d4b8";
 
 const state = {
   speed: 2,
@@ -479,12 +458,8 @@ const state = {
   stimuliSinceSpecial: 0,
   nextSpecialTarget: 10,
   stimuliSinceExtreme: 0,
-  nextExtremeTarget: 45,
+  nextExtremeTarget: 45
 };
-
-/* =========================
-   HELPERS
-========================= */
 
 function randomItem(array) {
   return array[Math.floor(Math.random() * array.length)];
@@ -528,10 +503,6 @@ function resetSessionCounters() {
   state.nextExtremeTarget = range(40, 50);
 }
 
-/* =========================
-   GENERACIÓN DE ESTÍMULOS
-========================= */
-
 function shouldShowExtreme() {
   if (!state.competition) return false;
   if (!state.extremeEvents) return false;
@@ -550,17 +521,9 @@ function getExtremeStimulus() {
 }
 
 function getSpecialStimulus() {
-  let pool;
-
-  if (state.relation === "balanced") {
-    pool = ["❤️", "💣"];
-  } else if (state.relation === "moreHearts") {
-    pool = ["❤️", "❤️", "💣"];
-  } else {
-    pool = ["❤️", "💣", "💣"];
-  }
-
-  return randomItem(pool);
+  if (state.relation === "balanced") return randomItem(["❤️", "💣"]);
+  if (state.relation === "moreHearts") return randomItem(["❤️", "❤️", "💣"]);
+  return randomItem(["❤️", "💣", "💣"]);
 }
 
 function getNormalStimulus() {
@@ -635,10 +598,6 @@ function getNextColor() {
   return nextColor;
 }
 
-/* =========================
-   SESIÓN
-========================= */
-
 function renderStimulus(forceNormal = false) {
   const stimulus = getNextStimulus(forceNormal);
   const color = getNextColor();
@@ -646,27 +605,29 @@ function renderStimulus(forceNormal = false) {
   const stimulusEl = document.getElementById("stimulus");
   const sessionScreen = document.getElementById("sessionScreen");
 
-  stimulusEl.innerText = stimulus;
-
   const isSpecial = ["❤️", "💣", "☠️", "🍀"].includes(stimulus);
 
+  stimulusEl.innerText = stimulus;
+
   if (isSpecial) {
-    sessionScreen.style.background = "#17d4b8";
+    sessionScreen.style.background = SPECIAL_BACKGROUND;
     stimulusEl.style.color = "#000000";
+    stimulusEl.className = "special-size";
   } else {
     sessionScreen.style.background = color.value;
     stimulusEl.style.color = getTextColor(color.value);
-  }
 
-  if (stimulus === "❤️" || stimulus === "💣" || stimulus === "☠️" || stimulus === "🍀") {
-    stimulusEl.className = "special-size";
-  } else {
-    stimulusEl.className = "stimulus-size";
+    if (state.stimulusType === "directions") {
+      stimulusEl.className = "direction-size";
+    } else {
+      stimulusEl.className = "number-size";
+    }
   }
 }
 
 function startLoop() {
   clearInterval(state.intervalId);
+
   state.intervalId = setInterval(() => {
     if (!state.paused) renderStimulus();
   }, state.speed * 1000);
@@ -674,6 +635,7 @@ function startLoop() {
 
 function startSession() {
   resetSessionCounters();
+
   state.running = true;
   state.paused = false;
 
@@ -683,32 +645,6 @@ function startSession() {
 
   renderStimulus(true);
   startLoop();
-}
-
-function runCountdown(callback) {
-  const countdownEl = document.getElementById("countdown");
-  const sequence = ["3", "2", "1", "YA"];
-  let index = 0;
-
-  const stimulusEl = document.getElementById("stimulus");
-  stimulusEl.style.visibility = "hidden";
-
-  countdownEl.style.display = "flex";
-  countdownEl.innerText = sequence[index];
-
-  const countdownId = setInterval(() => {
-    index += 1;
-
-    if (index >= sequence.length) {
-      clearInterval(countdownId);
-      countdownEl.style.display = "none";
-      stimulusEl.style.visibility = "visible";
-      callback();
-      return;
-    }
-
-    countdownEl.innerText = sequence[index];
-  }, 700);
 }
 
 function pauseSession() {
@@ -724,6 +660,7 @@ function resumeSession() {
 
 function backToMenu() {
   clearInterval(state.intervalId);
+
   state.running = false;
   state.paused = false;
 
@@ -732,10 +669,6 @@ function backToMenu() {
   document.getElementById("pauseOverlay").style.display = "none";
 }
 
-/* =========================
-   UI MENU
-========================= */
-
 function buildSpeedOptions() {
   const container = document.getElementById("speedOptions");
 
@@ -743,10 +676,12 @@ function buildSpeedOptions() {
     const button = document.createElement("button");
     button.className = "option-btn" + (speed === state.speed ? " active" : "");
     button.innerText = speed + "s";
+
     button.addEventListener("click", () => {
       state.speed = speed;
       setActiveButton(container, button);
     });
+
     container.appendChild(button);
   });
 }
@@ -854,7 +789,7 @@ function setupStaticButtons() {
   document.getElementById("resumeButton").addEventListener("click", resumeSession);
   document.getElementById("backMenuButton").addEventListener("click", backToMenu);
 
-  document.getElementById("sessionScreen").addEventListener("click", (event) => {
+  document.getElementById("sessionScreen").addEventListener("click", event => {
     if (event.target.closest("button")) return;
     if (state.paused) return;
     pauseSession();
