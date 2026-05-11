@@ -210,31 +210,44 @@
   }
 
   #stimulus {
-    font-size: clamp(140px, 42vmin, 620px);
+    font-size: clamp(220px, 70vmin, 900px);
     font-weight: 950;
     line-height: 0.85;
     color: #111827;
     text-align: center;
     transform: translateY(-1vh);
-    max-width: 96vw;
-    max-height: 90vh;
+    max-width: 98vw;
+    max-height: 92vh;
     white-space: nowrap;
   }
 
   .stimulus-size {
+    font-size: clamp(220px, 70vmin, 900px);
+  }
+
+  .special-size {
     font-size: clamp(140px, 42vmin, 620px);
   }
 
   @media (orientation: landscape) {
     .stimulus-size {
+      font-size: clamp(260px, 92vh, 980px);
+    }
+
+    .special-size {
       font-size: clamp(160px, 76vh, 680px);
     }
   }
 
   @media (orientation: portrait) {
     .stimulus-size {
+      font-size: clamp(240px, 92vw, 900px);
+    }
+
+    .special-size {
       font-size: clamp(150px, 78vw, 620px);
     }
+  }
   }
 
     .direction-stimulus {
@@ -248,15 +261,29 @@
 
   #countdown {
     display: none;
-    position: absolute;
+    position: fixed;
     inset: 0;
     align-items: center;
     justify-content: center;
-    font-size: clamp(100px, 28vw, 360px);
+    font-size: clamp(180px, 42vmin, 620px);
     font-weight: 950;
-    background: rgba(2, 6, 23, 0.92);
+    line-height: 0.85;
+    background: #020617;
     color: #ffffff;
-    z-index: 20;
+    z-index: 999;
+    text-align: center;
+  }
+
+  @media (orientation: landscape) {
+    #countdown {
+      font-size: clamp(220px, 82vh, 760px);
+    }
+  }
+
+  @media (orientation: portrait) {
+    #countdown {
+      font-size: clamp(200px, 82vw, 720px);
+    }
   }
 
   #pauseOverlay {
@@ -575,8 +602,8 @@ function getNormalStimulus() {
   return next;
 }
 
-function getNextStimulus() {
-  if (shouldShowExtreme()) {
+function getNextStimulus(forceNormal = false) {
+  if (!forceNormal && shouldShowExtreme()) {
     const extreme = getExtremeStimulus();
     state.previousStimulus = extreme;
     state.previousWasSpecial = true;
@@ -587,7 +614,7 @@ function getNextStimulus() {
     return extreme;
   }
 
-  if (shouldShowSpecial()) {
+  if (!forceNormal && shouldShowSpecial()) {
     const special = getSpecialStimulus();
     state.previousStimulus = special;
     state.previousWasSpecial = true;
@@ -637,8 +664,8 @@ function getNextColor() {
    SESIÓN
 ========================= */
 
-function renderStimulus() {
-  const stimulus = getNextStimulus();
+function renderStimulus(forceNormal = false) {
+  const stimulus = getNextStimulus(forceNormal);
   const color = getNextColor();
 
   const stimulusEl = document.getElementById("stimulus");
@@ -648,7 +675,11 @@ function renderStimulus() {
   sessionScreen.style.background = color.value;
   stimulusEl.style.color = getTextColor(color.value);
 
-  stimulusEl.className = "stimulus-size";
+  if (stimulus === "❤️" || stimulus === "💣" || stimulus === "☠️" || stimulus === "🍀") {
+    stimulusEl.className = "special-size";
+  } else {
+    stimulusEl.className = "stimulus-size";
+  }
 }
 
 function startLoop() {
@@ -668,7 +699,7 @@ function startSession() {
   document.getElementById("pauseOverlay").style.display = "none";
 
   runCountdown(() => {
-    renderStimulus();
+    renderStimulus(true);
     startLoop();
   });
 }
@@ -677,6 +708,9 @@ function runCountdown(callback) {
   const countdownEl = document.getElementById("countdown");
   const sequence = ["3", "2", "1", "YA"];
   let index = 0;
+
+  const stimulusEl = document.getElementById("stimulus");
+  stimulusEl.style.visibility = "hidden";
 
   countdownEl.style.display = "flex";
   countdownEl.innerText = sequence[index];
@@ -687,6 +721,7 @@ function runCountdown(callback) {
     if (index >= sequence.length) {
       clearInterval(countdownId);
       countdownEl.style.display = "none";
+      stimulusEl.style.visibility = "visible";
       callback();
       return;
     }
