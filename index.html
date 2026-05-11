@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SCAN360</title>
+
+<style>
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    margin: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #0f172a;
+    color: #ffffff;
+    user-select: none;
+  }
+
+  button, select {
+    font-family: inherit;
+  }
+
+  .screen {
+    width: 100vw;
+    height: 100vh;
+  }
+
+  /* =========================
+     MENU
+  ========================= */
+
+  #menuScreen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at top, #1e293b 0%, #020617 70%);
+    padding: 24px;
+    overflow-y: auto;
+  }
+
+  .menu-card {
+    width: min(1100px, 100%);
+    background: rgba(15, 23, 42, 0.92);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 28px;
+    padding: 28px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.45);
+  }
+
+  .brand {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .brand h1 {
+    margin: 0;
+    font-size: clamp(38px, 6vw, 72px);
+    letter-spacing: -0.06em;
+    line-height: 0.9;
+  }
+
+  .brand span {
+    color: #94a3b8;
+    font-size: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .section {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 20px;
+    padding: 18px;
+  }
+
+  .section h2 {
+    margin: 0 0 14px 0;
+    font-size: 17px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #e2e8f0;
+  }
+
+  .options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .option-btn {
+    border: 0;
+    border-radius: 14px;
+    padding: 12px 15px;
+    background: rgba(255,255,255,0.10);
+    color: #e5e7eb;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    min-width: 74px;
+  }
+
+  .option-btn.active {
+    background: #ffffff;
+    color: #020617;
+  }
+
+  .color-btn {
+    width: 62px;
+    height: 62px;
+    border-radius: 18px;
+    border: 4px solid rgba(255,255,255,0.18);
+    cursor: pointer;
+    position: relative;
+  }
+
+  .color-btn.active {
+    border-color: #ffffff;
+    box-shadow: 0 0 0 4px rgba(255,255,255,0.18);
+  }
+
+  .color-btn.active::after {
+    content: "✓";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    font-weight: 900;
+    color: inherit;
+  }
+
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+  }
+
+  .toggle-row p {
+    margin: 4px 0 0 0;
+    color: #94a3b8;
+    font-size: 14px;
+  }
+
+  .start-row {
+    margin-top: 22px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .start-btn {
+    width: min(520px, 100%);
+    border: 0;
+    border-radius: 24px;
+    padding: 22px 24px;
+    font-size: 30px;
+    font-weight: 950;
+    letter-spacing: -0.02em;
+    background: #ffffff;
+    color: #020617;
+    cursor: pointer;
+    box-shadow: 0 16px 50px rgba(255,255,255,0.12);
+  }
+
+  .hint {
+    margin-top: 14px;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 14px;
+  }
+
+  #competitionOptions {
+    display: none;
+    margin-top: 18px;
+    gap: 18px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #competitionOptions.visible {
+    display: grid;
+  }
+
+  /* =========================
+     SESSION
+  ========================= */
+
+  #sessionScreen {
+    display: none;
+    position: relative;
+    align-items: center;
+    justify-content: center;
+    background: #ef4444;
+  }
+
+  #stimulus {
+    font-size: clamp(140px, 42vmin, 620px);
+    font-weight: 950;
+    line-height: 0.85;
+    color: #111827;
+    text-align: center;
+    transform: translateY(-1vh);
+    max-width: 96vw;
+    max-height: 90vh;
+    white-space: nowrap;
+  }
+
+  .stimulus-size {
+    font-size: clamp(140px, 42vmin, 620px);
+  }
+
+  @media (orientation: landscape) {
+    .stimulus-size {
+      font-size: clamp(160px, 76vh, 680px);
+    }
+  }
+
+  @media (orientation: portrait) {
+    .stimulus-size {
+      font-size: clamp(150px, 78vw, 620px);
+    }
+  }
+
+    .direction-stimulus {
+      font-size: clamp(160px, 82vw, 640px);
+    }
+
+    .special-stimulus {
+      font-size: clamp(130px, 60vw, 480px);
+    }
+  }
+
+  #countdown {
+    display: none;
+    position: absolute;
+    inset: 0;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(100px, 28vw, 360px);
+    font-weight: 950;
+    background: rgba(2, 6, 23, 0.92);
+    color: #ffffff;
+    z-index: 20;
+  }
+
+  #pauseOverlay {
+    display: none;
+    position: absolute;
+    inset: 0;
+    align-items: center;
+    justify-content: center;
+    background: rgba(2, 6, 23, 0.72);
+    z-index: 30;
+    padding: 24px;
+  }
+
+  .pause-card {
+    width: min(560px, 100%);
+    background: rgba(15, 23, 42, 0.96);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 26px;
+    padding: 24px;
+    text-align: center;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.50);
+  }
+
+  .pause-card h2 {
+    margin: 0 0 18px 0;
+    font-size: 46px;
+    letter-spacing: -0.04em;
+  }
+
+  .pause-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .pause-actions button {
+    border: 0;
+    border-radius: 18px;
+    padding: 18px;
+    font-size: 22px;
+    font-weight: 900;
+    cursor: pointer;
+  }
+
+  .resume-btn {
+    background: #ffffff;
+    color: #020617;
+  }
+
+  .menu-btn {
+    background: rgba(255,255,255,0.12);
+    color: #ffffff;
+  }
+
+  
+
+  @media (max-width: 800px) {
+    .grid,
+    #competitionOptions.visible {
+      grid-template-columns: 1fr;
+    }
+
+    .menu-card {
+      padding: 20px;
+    }
+
+    .brand {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>
+</head>
+
+<body>
+
+<!-- =========================
+     MENU PRINCIPAL
+========================= -->
+<div id="menuScreen" class="screen">
+  <div class="menu-card">
+    <div class="brand">
+      <h1>SCAN360</h1>
+      <span>Percepción · Escaneo · Decisión</span>
+    </div>
+
+    <div class="grid">
+      <div class="section">
+        <h2>Velocidad</h2>
+        <div class="options" id="speedOptions"></div>
+      </div>
+
+      <div class="section">
+        <h2>Tipo de estímulo</h2>
+        <div class="options">
+          <button class="option-btn active" data-stimulus-type="numbers">Números</button>
+          <button class="option-btn" data-stimulus-type="directions">Direcciones</button>
+        </div>
+      </div>
+
+      <div class="section" id="numberSection">
+        <h2>Números</h2>
+        <div class="options">
+          <button class="option-btn" data-number-max="4">1–4</button>
+          <button class="option-btn" data-number-max="6">1–6</button>
+          <button class="option-btn" data-number-max="8">1–8</button>
+          <button class="option-btn active" data-number-max="10">1–10</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Colores</h2>
+        <div class="options" id="colorOptions"></div>
+      </div>
+
+      <div class="section">
+        <div class="toggle-row">
+          <div>
+            <h2 style="margin-bottom: 4px;">Competición</h2>
+            <p>Activa corazón y bomba dentro de la sesión.</p>
+          </div>
+          <button id="competitionToggle" class="option-btn">OFF</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="competitionOptions">
+      <div class="section">
+        <h2>Relación ❤️ / 💣</h2>
+        <div class="options">
+          <button class="option-btn active" data-relation="balanced">Igualdad</button>
+          <button class="option-btn" data-relation="moreHearts">Más ❤️</button>
+          <button class="option-btn" data-relation="moreBombs">Más 💣</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Frecuencia ❤️ / 💣</h2>
+        <div class="options">
+          <button class="option-btn" data-frequency="low">Baja</button>
+          <button class="option-btn active" data-frequency="medium">Media</button>
+          <button class="option-btn" data-frequency="high">Alta</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="toggle-row">
+          <div>
+            <h2 style="margin-bottom: 4px;">Eventos extremos</h2>
+            <p>☠️ elimina todas las vidas · 🍀 recupera todas.</p>
+          </div>
+          <button id="extremeToggle" class="option-btn">OFF</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="start-row">
+      <button class="start-btn" id="startButton">EMPEZAR</button>
+    </div>
+
+    <div class="hint">Durante la sesión: tocar pantalla = pausa. Al pausar podrás reanudar o volver al menú.</div>
+  </div>
+</div>
+
+<!-- =========================
+     SESIÓN
+========================= -->
+<div id="sessionScreen" class="screen">
+  <div id="stimulus" class="stimulus-size">1</div>
+  <div id="countdown">3</div>
+
+  <div id="pauseOverlay">
+    <div class="pause-card">
+      <h2>PAUSA</h2>
+      <div class="pause-actions">
+        <button class="resume-btn" id="resumeButton">REANUDAR</button>
+        <button class="menu-btn" id="backMenuButton">VOLVER AL MENÚ</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================
+   CONFIGURACIÓN BASE
+========================= */
+
+const COLORS = [
+  { id: "red", name: "Rojo", value: "#ef4444" },
+  { id: "blue", name: "Azul", value: "#3b82f6" },
+  { id: "green", name: "Verde", value: "#22c55e" },
+  { id: "yellow", name: "Amarillo", value: "#facc15" },
+  { id: "white", name: "Blanco", value: "#ffffff" },
+  { id: "black", name: "Negro", value: "#000000" },
+];
+
+const SPEEDS = [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5];
+const DIRECTIONS = ["↑", "↓", "←", "→"];
+
+const state = {
+  speed: 2,
+  stimulusType: "numbers",
+  numberMax: 10,
+  selectedColorIds: ["red", "blue", "green", "yellow"],
+  competition: false,
+  relation: "balanced",
+  frequency: "medium",
+  extremeEvents: false,
+
+  running: false,
+  paused: false,
+  intervalId: null,
+
+  previousStimulus: null,
+  previousWasSpecial: false,
+  previousColorId: null,
+  sameColorCount: 0,
+  stimuliSinceSpecial: 0,
+  nextSpecialTarget: 10,
+  stimuliSinceExtreme: 0,
+  nextExtremeTarget: 45,
+};
+
+/* =========================
+   HELPERS
+========================= */
+
+function randomItem(array) {
+  return array[Math.floor(Math.random() * array.length)];
+}
+
+function range(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function buildNumberList(max) {
+  return Array.from({ length: max }, (_, i) => i + 1);
+}
+
+function getSelectedColors() {
+  return COLORS.filter(color => state.selectedColorIds.includes(color.id));
+}
+
+function getTextColor(backgroundHex) {
+  const hex = backgroundHex.replace("#", "");
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.58 ? "#0f172a" : "#ffffff";
+}
+
+function getFrequencyTarget() {
+  if (state.frequency === "low") return range(13, 17);
+  if (state.frequency === "medium") return range(8, 12);
+  return range(4, 6);
+}
+
+function resetSessionCounters() {
+  state.previousStimulus = null;
+  state.previousWasSpecial = false;
+  state.previousColorId = null;
+  state.sameColorCount = 0;
+  state.stimuliSinceSpecial = 0;
+  state.nextSpecialTarget = getFrequencyTarget();
+  state.stimuliSinceExtreme = 0;
+  state.nextExtremeTarget = range(40, 50);
+}
+
+/* =========================
+   GENERACIÓN DE ESTÍMULOS
+========================= */
+
+function shouldShowExtreme() {
+  if (!state.competition) return false;
+  if (!state.extremeEvents) return false;
+  if (state.previousWasSpecial) return false;
+  return state.stimuliSinceExtreme >= state.nextExtremeTarget;
+}
+
+function shouldShowSpecial() {
+  if (!state.competition) return false;
+  if (state.previousWasSpecial) return false;
+  return state.stimuliSinceSpecial >= state.nextSpecialTarget;
+}
+
+function getExtremeStimulus() {
+  return randomItem(["☠️", "🍀"]);
+}
+
+function getSpecialStimulus() {
+  let pool;
+
+  if (state.relation === "balanced") {
+    pool = ["❤️", "💣"];
+  } else if (state.relation === "moreHearts") {
+    pool = ["❤️", "❤️", "💣"];
+  } else {
+    pool = ["❤️", "💣", "💣"];
+  }
+
+  return randomItem(pool);
+}
+
+function getNormalStimulus() {
+  const pool = state.stimulusType === "numbers"
+    ? buildNumberList(state.numberMax)
+    : DIRECTIONS;
+
+  let next;
+
+  do {
+    next = randomItem(pool);
+  } while (next === state.previousStimulus && pool.length > 1);
+
+  return next;
+}
+
+function getNextStimulus() {
+  if (shouldShowExtreme()) {
+    const extreme = getExtremeStimulus();
+    state.previousStimulus = extreme;
+    state.previousWasSpecial = true;
+    state.stimuliSinceSpecial = 0;
+    state.stimuliSinceExtreme = 0;
+    state.nextSpecialTarget = getFrequencyTarget();
+    state.nextExtremeTarget = range(40, 50);
+    return extreme;
+  }
+
+  if (shouldShowSpecial()) {
+    const special = getSpecialStimulus();
+    state.previousStimulus = special;
+    state.previousWasSpecial = true;
+    state.stimuliSinceSpecial = 0;
+    state.nextSpecialTarget = getFrequencyTarget();
+    return special;
+  }
+
+  const normal = getNormalStimulus();
+  state.previousStimulus = normal;
+  state.previousWasSpecial = false;
+  state.stimuliSinceSpecial += 1;
+  state.stimuliSinceExtreme += 1;
+  return normal;
+}
+
+function getNextColor() {
+  const selectedColors = getSelectedColors();
+
+  if (selectedColors.length === 1) {
+    const only = selectedColors[0];
+    state.previousColorId = only.id;
+    state.sameColorCount += 1;
+    return only;
+  }
+
+  let nextColor;
+
+  do {
+    nextColor = randomItem(selectedColors);
+  } while (
+    nextColor.id === state.previousColorId &&
+    state.sameColorCount >= 3
+  );
+
+  if (nextColor.id === state.previousColorId) {
+    state.sameColorCount += 1;
+  } else {
+    state.sameColorCount = 1;
+  }
+
+  state.previousColorId = nextColor.id;
+  return nextColor;
+}
+
+/* =========================
+   SESIÓN
+========================= */
+
+function renderStimulus() {
+  const stimulus = getNextStimulus();
+  const color = getNextColor();
+
+  const stimulusEl = document.getElementById("stimulus");
+  const sessionScreen = document.getElementById("sessionScreen");
+
+  stimulusEl.innerText = stimulus;
+  sessionScreen.style.background = color.value;
+  stimulusEl.style.color = getTextColor(color.value);
+
+  stimulusEl.className = "stimulus-size";
+}
+
+function startLoop() {
+  clearInterval(state.intervalId);
+  state.intervalId = setInterval(() => {
+    if (!state.paused) renderStimulus();
+  }, state.speed * 1000);
+}
+
+function startSession() {
+  resetSessionCounters();
+  state.running = true;
+  state.paused = false;
+
+  document.getElementById("menuScreen").style.display = "none";
+  document.getElementById("sessionScreen").style.display = "flex";
+  document.getElementById("pauseOverlay").style.display = "none";
+
+  runCountdown(() => {
+    renderStimulus();
+    startLoop();
+  });
+}
+
+function runCountdown(callback) {
+  const countdownEl = document.getElementById("countdown");
+  const sequence = ["3", "2", "1", "YA"];
+  let index = 0;
+
+  countdownEl.style.display = "flex";
+  countdownEl.innerText = sequence[index];
+
+  const countdownId = setInterval(() => {
+    index += 1;
+
+    if (index >= sequence.length) {
+      clearInterval(countdownId);
+      countdownEl.style.display = "none";
+      callback();
+      return;
+    }
+
+    countdownEl.innerText = sequence[index];
+  }, 700);
+}
+
+function pauseSession() {
+  if (!state.running || state.paused) return;
+  state.paused = true;
+  document.getElementById("pauseOverlay").style.display = "flex";
+}
+
+function resumeSession() {
+  state.paused = false;
+  document.getElementById("pauseOverlay").style.display = "none";
+}
+
+function backToMenu() {
+  clearInterval(state.intervalId);
+  state.running = false;
+  state.paused = false;
+
+  document.getElementById("sessionScreen").style.display = "none";
+  document.getElementById("menuScreen").style.display = "flex";
+  document.getElementById("pauseOverlay").style.display = "none";
+}
+
+/* =========================
+   UI MENU
+========================= */
+
+function buildSpeedOptions() {
+  const container = document.getElementById("speedOptions");
+
+  SPEEDS.forEach(speed => {
+    const button = document.createElement("button");
+    button.className = "option-btn" + (speed === state.speed ? " active" : "");
+    button.innerText = speed + "s";
+    button.addEventListener("click", () => {
+      state.speed = speed;
+      setActiveButton(container, button);
+    });
+    container.appendChild(button);
+  });
+}
+
+function buildColorOptions() {
+  const container = document.getElementById("colorOptions");
+
+  COLORS.forEach(color => {
+    const button = document.createElement("button");
+    button.className = "color-btn" + (state.selectedColorIds.includes(color.id) ? " active" : "");
+    button.style.background = color.value;
+    button.style.color = getTextColor(color.value);
+    button.setAttribute("aria-label", color.name);
+
+    button.addEventListener("click", () => {
+      const selected = state.selectedColorIds.includes(color.id);
+
+      if (selected && state.selectedColorIds.length === 1) return;
+
+      if (selected) {
+        state.selectedColorIds = state.selectedColorIds.filter(id => id !== color.id);
+        button.classList.remove("active");
+      } else {
+        state.selectedColorIds.push(color.id);
+        button.classList.add("active");
+      }
+    });
+
+    container.appendChild(button);
+  });
+}
+
+function setActiveButton(container, selectedButton) {
+  [...container.querySelectorAll(".option-btn")].forEach(button => {
+    button.classList.remove("active");
+  });
+
+  selectedButton.classList.add("active");
+}
+
+function setupStaticButtons() {
+  document.querySelectorAll("[data-stimulus-type]").forEach(button => {
+    button.addEventListener("click", () => {
+      state.stimulusType = button.dataset.stimulusType;
+      setActiveButton(button.parentElement, button);
+
+      document.getElementById("numberSection").style.opacity =
+        state.stimulusType === "numbers" ? "1" : "0.35";
+    });
+  });
+
+  document.querySelectorAll("[data-number-max]").forEach(button => {
+    button.addEventListener("click", () => {
+      state.numberMax = Number(button.dataset.numberMax);
+      setActiveButton(button.parentElement, button);
+    });
+  });
+
+  document.getElementById("competitionToggle").addEventListener("click", () => {
+    state.competition = !state.competition;
+
+    const toggle = document.getElementById("competitionToggle");
+    const panel = document.getElementById("competitionOptions");
+
+    if (state.competition) {
+      toggle.innerText = "ON";
+      toggle.classList.add("active");
+      panel.classList.add("visible");
+    } else {
+      toggle.innerText = "OFF";
+      toggle.classList.remove("active");
+      panel.classList.remove("visible");
+    }
+  });
+
+  document.querySelectorAll("[data-relation]").forEach(button => {
+    button.addEventListener("click", () => {
+      state.relation = button.dataset.relation;
+      setActiveButton(button.parentElement, button);
+    });
+  });
+
+  document.querySelectorAll("[data-frequency]").forEach(button => {
+    button.addEventListener("click", () => {
+      state.frequency = button.dataset.frequency;
+      setActiveButton(button.parentElement, button);
+    });
+  });
+
+  document.getElementById("extremeToggle").addEventListener("click", () => {
+    state.extremeEvents = !state.extremeEvents;
+
+    const toggle = document.getElementById("extremeToggle");
+
+    if (state.extremeEvents) {
+      toggle.innerText = "ON";
+      toggle.classList.add("active");
+    } else {
+      toggle.innerText = "OFF";
+      toggle.classList.remove("active");
+    }
+  });
+
+  document.getElementById("startButton").addEventListener("click", startSession);
+  document.getElementById("resumeButton").addEventListener("click", resumeSession);
+  document.getElementById("backMenuButton").addEventListener("click", backToMenu);
+
+  document.getElementById("sessionScreen").addEventListener("click", (event) => {
+    if (event.target.closest("button")) return;
+    if (state.paused) return;
+    pauseSession();
+  });
+}
+
+function init() {
+  buildSpeedOptions();
+  buildColorOptions();
+  setupStaticButtons();
+}
+
+init();
+</script>
+
+</body>
+</html>
