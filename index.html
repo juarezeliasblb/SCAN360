@@ -261,32 +261,6 @@
     }
   }
 
-  #countdown {
-    display: none;
-    position: fixed;
-    inset: 0;
-    align-items: center;
-    justify-content: center;
-    font-size: clamp(180px, 42vmin, 620px);
-    font-weight: 950;
-    line-height: 0.85;
-    background: #020617;
-    color: #ffffff;
-    z-index: 999;
-    text-align: center;
-  }
-
-  @media (orientation: landscape) {
-    #countdown {
-      font-size: clamp(220px, 82vh, 760px);
-    }
-  }
-
-  @media (orientation: portrait) {
-    #countdown {
-      font-size: clamp(200px, 82vw, 720px);
-    }
-  }
 
   #pauseOverlay {
     display: none;
@@ -455,7 +429,6 @@
 ========================= -->
 <div id="sessionScreen" class="screen">
   <div id="stimulus" class="stimulus-size">1</div>
-  <div id="countdown">3</div>
 
   <div id="pauseOverlay">
     <div class="pause-card">
