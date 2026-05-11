@@ -4,6 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>SCAN360</title>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#020617" />
 
 <style>
   * {
@@ -222,7 +224,7 @@
   }
 
   .stimulus-size {
-    font-size: clamp(220px, 70vmin, 900px);
+    font-size: clamp(300px, 94vmin, 1300px);
   }
 
   .special-size {
@@ -231,7 +233,7 @@
 
   @media (orientation: landscape) {
     .stimulus-size {
-      font-size: clamp(260px, 92vh, 980px);
+      font-size: clamp(360px, 118vh, 1500px);
     }
 
     .special-size {
@@ -241,7 +243,7 @@
 
   @media (orientation: portrait) {
     .stimulus-size {
-      font-size: clamp(240px, 92vw, 900px);
+      font-size: clamp(340px, 124vw, 1400px);
     }
 
     .special-size {
@@ -672,8 +674,16 @@ function renderStimulus(forceNormal = false) {
   const sessionScreen = document.getElementById("sessionScreen");
 
   stimulusEl.innerText = stimulus;
-  sessionScreen.style.background = color.value;
-  stimulusEl.style.color = getTextColor(color.value);
+
+  const isSpecial = ["❤️", "💣", "☠️", "🍀"].includes(stimulus);
+
+  if (isSpecial) {
+    sessionScreen.style.background = "#17d4b8";
+    stimulusEl.style.color = "#000000";
+  } else {
+    sessionScreen.style.background = color.value;
+    stimulusEl.style.color = getTextColor(color.value);
+  }
 
   if (stimulus === "❤️" || stimulus === "💣" || stimulus === "☠️" || stimulus === "🍀") {
     stimulusEl.className = "special-size";
@@ -698,10 +708,8 @@ function startSession() {
   document.getElementById("sessionScreen").style.display = "flex";
   document.getElementById("pauseOverlay").style.display = "none";
 
-  runCountdown(() => {
-    renderStimulus(true);
-    startLoop();
-  });
+  renderStimulus(true);
+  startLoop();
 }
 
 function runCountdown(callback) {
@@ -884,6 +892,12 @@ function init() {
   buildSpeedOptions();
   buildColorOptions();
   setupStaticButtons();
+}
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  });
 }
 
 init();
