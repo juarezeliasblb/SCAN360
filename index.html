@@ -225,6 +225,10 @@
     font-size: clamp(140px, 42vmin, 620px);
   }
 
+  .color-only-size {
+    font-size: 0;
+  }
+
   @media (orientation: landscape) {
     .number-size {
       font-size: clamp(470px, 145vh, 1900px);
@@ -340,7 +344,8 @@
       <div class="section">
         <h2>Tipo de estímulo</h2>
         <div class="options">
-          <button class="option-btn active" data-stimulus-type="numbers">Números</button>
+          <button class="option-btn active" data-stimulus-type="colors">Colores</button>
+          <button class="option-btn" data-stimulus-type="numbers">Números</button>
           <button class="option-btn" data-stimulus-type="directions">Direcciones</button>
         </div>
       </div>
@@ -410,7 +415,7 @@
 </div>
 
 <div id="sessionScreen" class="screen">
-  <div id="stimulus" class="number-size">1</div>
+  <div id="stimulus" class="color-only-size"></div>
 
   <div id="pauseOverlay">
     <div class="pause-card">
@@ -439,7 +444,7 @@ const SPECIAL_BACKGROUND = "#17d4b8";
 
 const state = {
   speed: 2,
-  stimulusType: "numbers",
+  stimulusType: "colors",
   numberMax: 10,
   selectedColorIds: ["red", "blue", "green", "yellow"],
   competition: false,
@@ -527,6 +532,10 @@ function getSpecialStimulus() {
 }
 
 function getNormalStimulus() {
+  if (state.stimulusType === "colors") {
+    return "";
+  }
+
   const pool = state.stimulusType === "numbers"
     ? buildNumberList(state.numberMax)
     : DIRECTIONS;
@@ -562,10 +571,15 @@ function getNextStimulus(forceNormal = false) {
   }
 
   const normal = getNormalStimulus();
-  state.previousStimulus = normal;
+
+  if (state.stimulusType !== "colors") {
+    state.previousStimulus = normal;
+  }
+
   state.previousWasSpecial = false;
   state.stimuliSinceSpecial += 1;
   state.stimuliSinceExtreme += 1;
+
   return normal;
 }
 
@@ -581,12 +595,20 @@ function getNextColor() {
 
   let nextColor;
 
-  do {
-    nextColor = randomItem(selectedColors);
-  } while (
-    nextColor.id === state.previousColorId &&
-    state.sameColorCount >= 3
-  );
+  if (state.stimulusType === "colors") {
+    do {
+      nextColor = randomItem(selectedColors);
+    } while (
+      nextColor.id === state.previousColorId &&
+      state.sameColorCount >= 3
+    );
+  } else {
+    do {
+      nextColor = randomItem(selectedColors);
+    } while (
+      nextColor.id === state.previousColorId
+    );
+  }
 
   if (nextColor.id === state.previousColorId) {
     state.sameColorCount += 1;
@@ -613,15 +635,19 @@ function renderStimulus(forceNormal = false) {
     sessionScreen.style.background = SPECIAL_BACKGROUND;
     stimulusEl.style.color = "#000000";
     stimulusEl.className = "special-size";
-  } else {
-    sessionScreen.style.background = color.value;
-    stimulusEl.style.color = getTextColor(color.value);
+    return;
+  }
 
-    if (state.stimulusType === "directions") {
-      stimulusEl.className = "direction-size";
-    } else {
-      stimulusEl.className = "number-size";
-    }
+  sessionScreen.style.background = color.value;
+  stimulusEl.style.color = getTextColor(color.value);
+
+  if (state.stimulusType === "colors") {
+    stimulusEl.innerText = "";
+    stimulusEl.className = "color-only-size";
+  } else if (state.stimulusType === "directions") {
+    stimulusEl.className = "direction-size";
+  } else {
+    stimulusEl.className = "number-size";
   }
 }
 
@@ -722,14 +748,17 @@ function setActiveButton(container, selectedButton) {
   selectedButton.classList.add("active");
 }
 
+function updateNumberSectionVisibility() {
+  document.getElementById("numberSection").style.opacity =
+    state.stimulusType === "numbers" ? "1" : "0.35";
+}
+
 function setupStaticButtons() {
   document.querySelectorAll("[data-stimulus-type]").forEach(button => {
     button.addEventListener("click", () => {
       state.stimulusType = button.dataset.stimulusType;
       setActiveButton(button.parentElement, button);
-
-      document.getElementById("numberSection").style.opacity =
-        state.stimulusType === "numbers" ? "1" : "0.35";
+      updateNumberSectionVisibility();
     });
   });
 
@@ -800,6 +829,7 @@ function init() {
   buildSpeedOptions();
   buildColorOptions();
   setupStaticButtons();
+  updateNumberSectionVisibility();
 }
 
 if ("serviceWorker" in navigator) {
